@@ -4,7 +4,7 @@ const formulario = document.querySelector('form');
 
 const url = (window.location.hostname.includes('localhost')) ?
     'http://localhost:8082/api/auth' :
-    'https://cafe-restserver-node-fh.onrender.com/api/auth'
+    'https://cafe-restserver-node-fh.onrender.com/api/auth';
 let googleId;
 
 
@@ -13,9 +13,7 @@ let googleId;
 formulario.addEventListener('submit', evt => {
     evt.preventDefault();
 
-    const formData = {
-
-    }
+    const formData = {}
 
     for (let el of formulario.elements) {
         if (el.name.length > 0) {
@@ -41,6 +39,10 @@ formulario.addEventListener('submit', evt => {
 
             // Grabar nuevo token (que devuelve mi backend)
             localStorage.setItem('token', token);
+
+            // Redireccionar al chat
+            window.location = 'chat.html';
+
         })
         .catch(err => {
             console.log(err);
@@ -111,11 +113,17 @@ window.onload = function () {
             })
             .then(resp => resp.json())
             // Solo me interesa obtener el token para validar
-            .then(({
-                token
-            }) => {
+            .then(({ msg, token }) => {
+
+                if (msg) {
+                    return console.error(msg);
+                }
+
                 // Guardar en localStorage
                 localStorage.setItem('token', token);
+
+                // Redireccionar al chat
+                window.location = 'chat.html';
 
             })
             .catch(console.log);
