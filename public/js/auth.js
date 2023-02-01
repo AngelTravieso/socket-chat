@@ -31,8 +31,11 @@ formulario.addEventListener('submit', evt => {
             },
         })
         .then(resp => resp.json())
-        .then(({ msg, token }) => {
-            if(msg) {
+        .then(({
+            msg,
+            token
+        }) => {
+            if (msg) {
                 return console.error(msg);
             }
 
