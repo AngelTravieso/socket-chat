@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <title>Google Sign-In</title>
+</head>
+
+<body class="container">
+
+    <div class="row mt-5">
+        <div class="col-sm-6">
+            <h1>Google Sign-In</h1>
+            <hr>
+
+            <!-- Selector del botón -->
+            <div id="buttonDiv"></div>
+
+            <button id="g_id_signout">
+                Log out
+            </button>
+        </div>
+        <div class="col-sm-6">
+
+        </div>
+    </div>
+
+
+    <script>
+        let url = (window.location.hostname.includes('localhost')) ?
+            'http://localhost:8082/api/auth/google' :
+            'https://cafe-restserver-node-fh.onrender.com/api/auth/google'
+        let googleId;
+
+        // boton de salir
+        const button = document.getElementById("g_id_signout")
+
+        window.onload = function () {
+            google.accounts.id.initialize({
+                // GOOGLE_CLIENT_ID
+                client_id: "656202371387-3f9mk4s8qvb360ff1hghsjnuj3mmv2gg.apps.googleusercontent.com",
+                callback: handleCredentialResponse
+            });
+            google.accounts.id.renderButton(
+                // ID en html del boton
+                document.getElementById("buttonDiv"), {
+                    // Personalizar botón
+                    type: "standard",
+                    shape: "pill",
+                    theme: "filled_black",
+                    size: "large",
+                    text: "Iniciar sesión con Google",
+                    locales: "es",
+                    // El boton personalizado no se muestra si el width es menor a 200
+                    width: "250",
+                }
+            );
+
+            // Mostrar dialogo de Google
+            google.accounts.id.prompt();
+
+            // Escuchar la respuesta de la credenciales
+            function handleCredentialResponse(response) {
+
+                const responsePayload = parseJwt(response.credential);
+
+                // Google ID
+                googleId = responsePayload.sub;
+
+                // JWT Google
+                let id_token = response.credential;
+
+                const dataGoogle = {
+                    "ID Google": googleId,
+                    "Full Name": responsePayload.name,
+                    "Given Name": responsePayload.given_name,
+                    "Last Name": responsePayload.family_name,
+                    "Image URL": responsePayload.picture,
+                    "Email": responsePayload.email
+                }
+
+                const data = {
+                    id_token
+                };
+
+                // enviar token al backend
+                fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        // JWT Google
+                        body: JSON.stringify(data),
+                    })
+                    .then(resp => resp.json())
+                    .then(data => console.log('Backend', data))
+                    .catch(console.log);
+
+            }
+
+
+            // cerrar sesion
+            function closeSession(googleId) {
+
+                // https://developers.google.com/identity/gsi/web/guides/revoke
+
+                // se puede pasar el id o el correo del usuario logueado
+                google.accounts.id.revoke(googleId, done => {
+
+                    try {
+                        // sesion cerrada correctamente
+                        console.log(`Usuario ${googleId} ha cerrado sesión: ${done.successful}`);
+                    } catch (error) {
+                        console.log(error);
+                        // hubo algun error
+                        console.log(done.error);
+
+                    }
+
+                });
+            }
+
+            // evento click para cerrar sesión a google
+            button.addEventListener("click", () => closeSession(googleId));
+
+
+            // Parsear jwt
+            function parseJwt(token) {
+                // toma el payload del token
+                var base64Url = token.split('.')[1];
+                var base64 = base64Url.replace('-', '+').replace('_', '/');
+
+                /*
+                    codificar
+                    btoa() codifica un string en Base64
+    
+                    decodificar
+                    atob() función que decodifica un String cuya
+                    data ha sido codificada en Base64
+                */
+                return JSON.parse(window.atob(base64));
+            };
+        }
+    </script>
+
+    <!-- Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"
+        integrity="sha384-mQ93GR66B00ZXjt0YO5KlohRA5SY2XofN4zfuZxLkoj1gXtW8ANNCe9d5Y3eG5eD" crossorigin="anonymous">
+    </script>
+
+
+    <!-- Script de Google SignIn -->
+    <script src="https://accounts.google.com/gsi/client" referrerpolicy="no-referrer-when-downgrade" async defer>
+    </script>
+
+</body>
+
+</html>
