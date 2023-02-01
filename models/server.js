@@ -3,15 +3,17 @@ const cors = require('cors');
 const express = require('express');
 const fileUpload = require('express-fileupload');
 
-const {
-    dbConnection
-} = require('../database/config');
+const { dbConnection } = require('../database/config');
+
+const { socketController } = require('../sockets/controller');
 
 
 class Server {
     constructor() {
         this.app = express();
         this.port = process.env.PORT || 8081;
+        this.server = require('http').createServer(this.app);
+        this.io = require('socket.io')(this.server);
 
         this.paths = {
             auth: '/api/auth',
@@ -30,6 +32,10 @@ class Server {
 
         // Rutas de mi aplicacion
         this.routes();
+
+        // Sockets
+        this.sockets();
+
     }
 
     async conectarDB() {
@@ -48,8 +54,8 @@ class Server {
 
         // TempFile options (carga de archivos)
         this.app.use(fileUpload({
-            useTempFiles : true,
-            tempFileDir : '/tmp/',
+            useTempFiles: true,
+            tempFileDir: '/tmp/',
             // Crea automaticamente el directorio si no existe
             createParentPath: true,
         }));
@@ -57,7 +63,6 @@ class Server {
     }
 
     routes() {
-        // Middleware condicional
         this.app.use(this.paths.auth, require('../routes/auth'));
         this.app.use(this.paths.buscar, require('../routes/buscar'));
         this.app.use(this.paths.categorias, require('../routes/categorias'));
@@ -66,8 +71,12 @@ class Server {
         this.app.use(this.paths.usuarios, require('../routes/usuarios'));
     }
 
+    sockets() {
+        this.io.on('connection', socketController);
+    }
+
     listen() {
-        this.app.listen(this.port, () => {
+        this.server.listen(this.port, () => {
             console.log(`Server running at port: ${this.port}`);
         });
     }
