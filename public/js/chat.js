@@ -63,9 +63,7 @@ const conectarSocket = async () => {
         console.log('Sockets offline');
     });
 
-    socket.on('recibir-mensajes', (payload) => {
-        console.log(payload);
-    });
+    socket.on('recibir-mensajes', dibujarMensajes);
 
     // Escuchar usuarios que se unan al chat
     socket.on('usuarios-activos', dibujarUsuarios);
@@ -76,6 +74,7 @@ const conectarSocket = async () => {
 
 }
 
+// Mostrar usuarios conectados
 const dibujarUsuarios = (usuarios = []) => {
 
     let usersHtml = '';
@@ -96,6 +95,28 @@ const dibujarUsuarios = (usuarios = []) => {
 
 }
 
+// Mostrar historial de mensajes
+const dibujarMensajes = (mensajes = []) => {
+
+    let mensajesHtml = '';
+
+    mensajes.forEach(({ nombre, mensaje }) => {
+        mensajesHtml += `
+            <li>
+                <p>
+                    <span class="text-primary">${nombre}</span>
+                    <span>${mensaje}</span>
+                </p>
+            </li>
+        `;
+    });
+
+    // Dibujar usuarios (en html)
+    ulMensajes.innerHTML = mensajesHtml;
+
+}
+
+
 const main = async () => {
 
     // Validar JWT
@@ -111,12 +132,12 @@ txtMensaje.addEventListener('keyup', ({ keyCode }) => {
     const uid = txtUid.value;
 
     // Si se presiona tecla diferente a 'Enter'
-    if(keyCode !== 13) {
+    if (keyCode !== 13) {
         return;
     }
 
     // Si el mensaje está vacio
-    if(mensaje.length === 0) {
+    if (mensaje.length === 0) {
         return;
     }
 
