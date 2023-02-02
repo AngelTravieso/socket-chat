@@ -72,7 +72,8 @@ class Server {
     }
 
     sockets() {
-        this.io.on('connection', socketController);
+        // Para poder enviar mensajes a todos (sin broadcast ni doble emision)
+        this.io.on('connection', (socket ) => socketController(socket, this.io));
     }
 
     listen() {

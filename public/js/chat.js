@@ -67,8 +67,9 @@ const conectarSocket = async () => {
         // TODO
     });
 
-    socket.on('usuarios-activos', () => {
-        // TODO
+    // Escuchar usuarios que se unan al chat
+    socket.on('usuarios-activos', (payload) => {
+        console.log(payload);
     });
 
     socket.on('mensaje-privado', () => {
