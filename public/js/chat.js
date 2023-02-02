@@ -17,13 +17,13 @@ const validarJWT = async () => {
     const token = localStorage.getItem('token') || '';
 
     // Token no válido
-    if(token.length <= 10) {
+    if (token.length <= 10) {
         // Redireccionar al directorio raiz
         window.location = 'index.html';
         throw new Error('No hay token en el servidor');
     }
-    
-    const res = await fetch( url, {
+
+    const res = await fetch(url, {
         headers: {
             'x-token': token
         }
@@ -68,13 +68,31 @@ const conectarSocket = async () => {
     });
 
     // Escuchar usuarios que se unan al chat
-    socket.on('usuarios-activos', (payload) => {
-        console.log(payload);
-    });
+    socket.on('usuarios-activos', dibujarUsuarios);
 
     socket.on('mensaje-privado', () => {
         // TODO
     });
+
+}
+
+const dibujarUsuarios = (usuarios = []) => {
+
+    let usersHtml = '';
+
+    usuarios.forEach(({ nombre, uid }) => {
+        usersHtml += `
+            <li>
+                <p>
+                    <h5 class="text-success">${nombre}</h5>
+                    <span class="fs-6 text-muted">${uid}</span>
+                </p>
+            </li>
+        `;
+    });
+
+    // Dibujar usuarios (en html)
+    ulUsuarios.innerHTML = usersHtml;
 
 }
 
