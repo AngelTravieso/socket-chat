@@ -4,7 +4,7 @@ const formulario = document.querySelector('form');
 
 const url = (window.location.hostname.includes('localhost')) ?
     'http://localhost:8082/api/auth' :
-    'https://cafe-restserver-node-fh.onrender.com/api/auth';
+    'https://socket-chat-2945.onrender.com/api/auth';
 let googleId;
 
 
