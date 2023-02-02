@@ -31,7 +31,7 @@ const validarJWT = async () => {
 
     const { usuario: userDB, token: tokenDB } = await res.json();
 
-    console.log(userDB, tokenDB);
+    // console.log(userDB, tokenDB);
 
     // Renovar token del localstorage
     localStorage.setItem('token', tokenDB);
@@ -47,7 +47,7 @@ const validarJWT = async () => {
 
 const conectarSocket = async () => {
     // Enviar token al socket (para validarlo)
-    const socket = io({
+    socket = io({
         // Headers adicionales en la conexión
         'extraHeaders': {
             'x-token': localStorage.getItem('token'),
@@ -63,8 +63,8 @@ const conectarSocket = async () => {
         console.log('Sockets offline');
     });
 
-    socket.on('recibir-mensajes', () => {
-        // TODO
+    socket.on('recibir-mensajes', (payload) => {
+        console.log(payload);
     });
 
     // Escuchar usuarios que se unan al chat
@@ -102,6 +102,30 @@ const main = async () => {
     await validarJWT();
 
 }
+
+
+// * EVENTOS
+txtMensaje.addEventListener('keyup', ({ keyCode }) => {
+
+    const mensaje = txtMensaje.value.trim();
+    const uid = txtUid.value;
+
+    // Si se presiona tecla diferente a 'Enter'
+    if(keyCode !== 13) {
+        return;
+    }
+
+    // Si el mensaje está vacio
+    if(mensaje.length === 0) {
+        return;
+    }
+
+    socket.emit('enviar-mensaje', { mensaje, uid });
+
+    // Limpiar input de mensaje
+    txtMensaje.value = '';
+
+});
 
 main();
 

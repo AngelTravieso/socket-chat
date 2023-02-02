@@ -33,6 +33,13 @@ const socketController = async (socket = new Socket, io) => {
         io.emit('usuarios-activos', chatMensajes.usuariosArr);
     });
 
+    // Escuchar mensajes enviados
+    socket.on('enviar-mensaje', ({ uid, mensaje }) => {
+        // Enviar mensaje a los usuario conectados
+        chatMensajes.enviarMensaje(usuario.id, usuario.nombre, mensaje);
+        io.emit('recibir-mensajes', chatMensajes.ultimos10);
+    });
+
 }
 
 module.exports = {
